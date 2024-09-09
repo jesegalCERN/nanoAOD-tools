@@ -3,8 +3,8 @@ import os
 import sys
 import subprocess
 
-from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
-from PhysicsTools.NanoAODTools.postprocessing.modules.jme.fatJetUncertainties import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import jetmetUncertaintiesProducer
+from PhysicsTools.NanoAODTools.postprocessing.modules.jme.fatJetUncertainties import fatJetUncertaintiesProducer
 
 # JEC dict
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC#Recommended_for_MC
