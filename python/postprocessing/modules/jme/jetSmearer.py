@@ -39,6 +39,8 @@ class jetSmearer(Module):
         self.jerArchive.extractall(self.jerInputFilePath)
         self.jerInputFileName = jerInputFileName
         self.jerUncertaintyInputFileName = jerUncertaintyInputFileName
+        
+        print("JS JER Archive: " + self.jerInputFilePath + "/" + self.jerInputFileName)
 
         self.jmr_vals = jmr_vals
 

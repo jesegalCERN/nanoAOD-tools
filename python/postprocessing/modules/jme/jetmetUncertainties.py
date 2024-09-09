@@ -22,7 +22,7 @@ class jetmetUncertaintiesProducer(Module):
                  jesUncertainties=["Total"],
                  archive=None,
                  globalTagProd=None,
-                 jetType="AK4PFchs",
+                 jetType="AK4PFPuppi",
                  metBranchName="MET",
                  jerTag="",
                  isData=False,
@@ -62,8 +62,15 @@ class jetmetUncertaintiesProducer(Module):
         # smear jet pT to account for measured difference in JER between data
         # and simulation.
         if jerTag != "":
-            self.jerInputFileName = jerTag + "_PtResolution_" + jetType + ".txt"
-            self.jerUncertaintyInputFileName = jerTag + "_SF_" + jetType + ".txt"
+            if "UL17" in jerTag:
+                print("\nYear is 2017 - used AK4PFchs corrections for" + jetType + "jets")
+                # jetType = "AK4PFchs"
+                self.jerInputFileName = jerTag + "_PtResolution_" + "AK4PFchs" + ".txt"        # Use AK4chs for all
+                self.jerUncertaintyInputFileName = jerTag + "_SF_" + "AK4PFchs" + ".txt"       # Use AK4chs for all
+            else:
+                print("Used " + jetType +  " corrections")
+                self.jerInputFileName = jerTag + "_PtResolution_" + jetType + ".txt"
+                self.jerUncertaintyInputFileName = jerTag + "_SF_" + jetType + ".txt"
         else:
             print(
                 "WARNING: jerTag is empty!!! This module will soon be " \
@@ -79,6 +86,7 @@ class jetmetUncertaintiesProducer(Module):
                 self.jerInputFileName = "Autumn18_V7_MC_PtResolution_" + jetType + ".txt"
                 self.jerUncertaintyInputFileName = "Autumn18_V7_MC_SF_" + jetType + ".txt"
 
+        # Corrections downloaded from: https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution
         self.jetSmearer = jetSmearer(globalTag, jetType, self.jerInputFileName,
                                      self.jerUncertaintyInputFileName)
 
@@ -91,16 +99,11 @@ class jetmetUncertaintiesProducer(Module):
         self.lenVar = "n" + self.jetBranchName
 
         # read jet energy scale (JES) uncertainties
-        # (downloaded from https://twiki.cern.ch/twiki/bin/view/CMS/JECDataMC )
+        # (downloaded from https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC)
         self.jesInputArchivePath = os.environ['CMSSW_BASE'] + \
             "/src/PhysicsTools/NanoAODTools/data/jme/"
-        # Text files are now tarred so must extract first into temporary
-        # directory (gets deleted during python memory management at
-        # script exit)
         self.jesArchive = tarfile.open(
-            self.jesInputArchivePath + globalTag +
-            ".tgz", "r:gz") if not archive else tarfile.open(
-                self.jesInputArchivePath + archive + ".tgz", "r:gz")
+            self.jesInputArchivePath + globalTag + ".tgz", "r:gz")
         self.jesInputFilePath = tempfile.mkdtemp()
         self.jesArchive.extractall(self.jesInputFilePath)
 
@@ -108,18 +111,22 @@ class jetmetUncertaintiesProducer(Module):
         # applied are also needed. IS THAT EVEN CORRECT?
 
         if len(jesUncertainties) == 1 and jesUncertainties[0] == "Total":
+            print("\nUsing TOTAL uncertainties")
             self.jesUncertaintyInputFileName = globalTag + "_Uncertainty_" + jetType + ".txt"
         elif jesUncertainties[0] == "Merged" and not self.isData:
-            self.jesUncertaintyInputFileName = "Regrouped_" + \
-                globalTag + "_UncertaintySources_" + jetType + ".txt"
+            self.jesUncertaintyInputFileName = "RegroupedV2_" + \
+                globalTag + "_UncertaintySources_" + "AK4PFchs" + ".txt"      # File uses only AK4chs
+            print("\nUsing MERGED uncertainties")
         else:
             self.jesUncertaintyInputFileName = globalTag + \
                 "_UncertaintySources_" + jetType + ".txt"
+            print("\nUsing ALL uncertainties")
 
+        print("JES Archive: " + self.jesInputFilePath + self.jesUncertaintyInputFileName)
+        
         # read all uncertainty source names from the loaded file
         if jesUncertainties[0] in ["All", "Merged"]:
-            with open(self.jesInputFilePath + '/' +
-                      self.jesUncertaintyInputFileName) as f:
+            with open(os.path.join(self.jesInputFilePath, self.jesUncertaintyInputFileName)) as f:
                 lines = f.read().split("\n")
                 sources = [
                     x for x in lines if x.startswith("[") and x.endswith("]")

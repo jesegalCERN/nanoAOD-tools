@@ -50,8 +50,14 @@ class fatJetUncertaintiesProducer(Module):
         # smear jet pT to account for measured difference in JER between data
         # and simulation.
         if jerTag != "":
-            self.jerInputFileName = jerTag + "_PtResolution_" + jetType + ".txt"
-            self.jerUncertaintyInputFileName = jerTag + "_SF_" + jetType + ".txt"
+            if "UL17" in jerTag:
+                print("Year is 2017 - used AK4PFchs corrections for" + jetType + "jets")
+                self.jerInputFileName = jerTag + "_PtResolution_" + "AK4PFchs" + ".txt" ## from Andrea email, correction is same for all jet collections
+                self.jerUncertaintyInputFileName = jerTag + "_SF_" + "AK4PFchs" + ".txt"
+            else:
+                print("Used " + jetType +  " corrections")
+                self.jerInputFileName = jerTag + "_PtResolution_" + jetType + ".txt" 
+                self.jerUncertaintyInputFileName = jerTag + "_SF_" + jetType + ".txt"
         else:
             print(
                 "WARNING: jerTag is empty!!! This module will soon be "
@@ -145,8 +151,8 @@ class fatJetUncertaintiesProducer(Module):
         if len(jesUncertainties) == 1 and jesUncertainties[0] == "Total":
             self.jesUncertaintyInputFileName = globalTag + "_Uncertainty_" + jetType + ".txt"
         elif jesUncertainties[0] == "Merged" and not self.isData:
-            self.jesUncertaintyInputFileName = "Regrouped_" + \
-                globalTag + "_UncertaintySources_" + jetType + ".txt"
+            self.jesUncertaintyInputFileName = "RegroupedV2_" + \
+                globalTag + "_UncertaintySources_" + "AK4PFchs" + ".txt"
         else:
             self.jesUncertaintyInputFileName = globalTag + \
                 "_UncertaintySources_" + jetType + ".txt"
